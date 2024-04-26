@@ -22,7 +22,7 @@ type Object struct {
 	Key         string
 	ContentType string
 	Metadata    *Metadata
-	io.Reader
+	io.ReadCloser
 }
 
 type Bucket interface {
@@ -129,12 +129,44 @@ func (f FileBucket) GetObject(key string) (*Object, error) {
 	} else if err != nil {
 		return nil, err
 	}
+	if metadata == nil {
+		metadata, err = f.createMetadataFromFile(key)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &Object{
-		Reader:      fc,
+		ReadCloser:  fc,
 		Key:         key,
 		ContentType: metadata.ContentType,
 		Metadata:    metadata,
 	}, nil
+}
+
+func (f FileBucket) createMetadataFromFile(key string) (*Metadata, error) {
+	keyPath, _ := f.getObjectPath(key)
+	fc, err := os.Open(keyPath)
+	if err != nil {
+		return nil, err
+	}
+	fs, err := fc.Stat()
+	if err != nil {
+		return nil, err
+	}
+	defer fc.Close()
+
+	hasher := md5.New()
+	if _, err := io.Copy(hasher, fc); err != nil {
+		return nil, err
+	}
+	digest := hex.EncodeToString(hasher.Sum(nil))
+	metadata := &Metadata{
+		Digest:        digest,
+		ContentType:   "application/octet-stream",
+		ContentLength: int(fs.Size()),
+		ModTime:       fs.ModTime().UnixMilli(),
+	}
+	return f.PutObjectMetadata(key, metadata)
 }
 
 func (f FileBucket) GetObjectMetadata(key string) (*Metadata, error) {

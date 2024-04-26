@@ -6,12 +6,16 @@ import (
 )
 
 type chunkedReader struct {
-	inner         io.Reader
+	inner         io.ReadCloser
 	chunkRemain   int
 	notFirstChunk bool
 }
 
-func newChunkedReader(inner io.Reader) *chunkedReader {
+func (r *chunkedReader) Close() error {
+	return r.inner.Close()
+}
+
+func newChunkedReader(inner io.ReadCloser) *chunkedReader {
 	return &chunkedReader{
 		inner:         inner,
 		chunkRemain:   0,

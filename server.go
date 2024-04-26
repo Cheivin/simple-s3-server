@@ -85,12 +85,12 @@ func (s server) HandlePutObject(w http.ResponseWriter, r *http.Request) {
 		Metadata: &bucket.Metadata{
 			ModTime: time.Now().UnixMilli(),
 		},
-		Reader: r.Body,
+		ReadCloser: r.Body,
 	}
 
 	// var reader io.Reader
 	if sha := r.Header.Get("X-Amz-Content-Sha256"); sha == "STREAMING-AWS4-HMAC-SHA256-PAYLOAD" {
-		object.Reader = newChunkedReader(r.Body)
+		object.ReadCloser = newChunkedReader(r.Body)
 		size := r.Header.Get("X-Amz-Decoded-Content-Length")
 		if size == "" {
 			WriteError(w, ErrWith(http.StatusBadRequest, nil))
@@ -190,6 +190,10 @@ func (s server) HandleGetObjectMetadata(w http.ResponseWriter, r *http.Request) 
 	metadata, err := b.GetObjectMetadata(uri[1])
 	if err != nil {
 		WriteError(w, ErrWith(http.StatusInternalServerError, err))
+		return
+	}
+	if metadata == nil {
+		WriteError(w, ErrWith(http.StatusNotFound, nil))
 		return
 	}
 	w.Header().Set("Content-Type", metadata.ContentType)
