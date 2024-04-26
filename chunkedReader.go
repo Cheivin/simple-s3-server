@@ -1,4 +1,4 @@
-package main
+package s3server
 
 import (
 	"fmt"
