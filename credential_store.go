@@ -1,7 +1,7 @@
 package s3server
 
 import (
-	"simple-s3-server/signature"
+	"github.com/Cheivin/simple-s3-server/signature"
 	"sync"
 )
 

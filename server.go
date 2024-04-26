@@ -4,10 +4,10 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/Cheivin/simple-s3-server/bucket"
+	"github.com/Cheivin/simple-s3-server/signature"
 	"io"
 	"net/http"
-	"simple-s3-server/bucket"
-	"simple-s3-server/signature"
 	"strings"
 	"time"
 )

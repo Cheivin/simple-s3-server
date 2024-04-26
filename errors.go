@@ -1,8 +1,8 @@
 package s3server
 
 import (
+	"github.com/Cheivin/simple-s3-server/signature"
 	"net/http"
-	"simple-s3-server/signature"
 )
 
 // http://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html
