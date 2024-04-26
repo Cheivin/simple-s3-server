@@ -7,6 +7,7 @@ import (
 	"github.com/Cheivin/simple-s3-server/bucket"
 	"github.com/Cheivin/simple-s3-server/signature"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -45,6 +46,11 @@ func WriteError(w http.ResponseWriter, err Error) {
 }
 
 func (s server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error("panic", "err", err)
+		}
+	}()
 	if s.credentials != nil {
 		err := signature.V4SignVerify(r, s.credentials)
 		if !errors.Is(err, signature.ErrNone) {
